@@ -1,7 +1,14 @@
-```bash
 #!/bin/bash
 
-# Check disk usage
+set -e
+set -u
+set -o pipefail
+
+# ==========================================
+# Reusable System Health Functions
+# ==========================================
+
+# Check disk usage against a threshold
 check_disk() {
     local threshold="$1"
     local usage
@@ -11,7 +18,7 @@ check_disk() {
     echo "Disk usage: ${usage}%"
 
     if [ "$usage" -ge "$threshold" ]; then
-        echo "WARNING: Disk usage is above ${threshold}%."
+        echo "WARNING: Disk usage is at or above ${threshold}%."
         return 1
     else
         echo "OK: Disk usage is below ${threshold}%."
@@ -19,25 +26,23 @@ check_disk() {
     fi
 }
 
-
-# Check memory usage
+# Check memory usage against a threshold
 check_memory() {
     local threshold="$1"
     local usage
 
-    usage=$(free | awk '/Mem:/ {printf "%.0f", $3/$2 * 100}')
+    usage=$(free | awk '/Mem:/ {printf "%.0f\n", $3/$2 * 100}')
 
     echo "Memory usage: ${usage}%"
 
     if [ "$usage" -ge "$threshold" ]; then
-        echo "WARNING: Memory usage is above ${threshold}%."
+        echo "WARNING: Memory usage is at or above ${threshold}%."
         return 1
     else
         echo "OK: Memory usage is below ${threshold}%."
         return 0
     fi
 }
-
 
 # Display the process using the most CPU
 show_top_process() {
@@ -48,4 +53,3 @@ show_top_process() {
     echo "Top CPU process:"
     echo "$process"
 }
-```

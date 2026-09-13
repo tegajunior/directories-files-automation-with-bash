@@ -1,5 +1,8 @@
-```bash
 #!/bin/bash
+
+set -e
+set -u
+set -o pipefail
 
 # ==========================================
 # Directory and File Automation
@@ -14,9 +17,33 @@
 # content to existing files.
 # ==========================================
 
-# Base directory
-BASE_DIR="$HOME"
+# Default base directory
+DEFAULT_BASE_DIR="$HOME/directories-files-automation-with-bash"
 
+# Use the first argument if provided; otherwise use the default
+BASE_DIR="${1:-$DEFAULT_BASE_DIR}"
+
+# Validate that the path is absolute
+if [[ "$BASE_DIR" != /* ]]; then
+    echo "ERROR: Base directory must be an absolute path."
+    exit 1
+fi
+
+# Prevent using the root filesystem itself
+if [[ "$BASE_DIR" == "/" ]]; then
+    echo "ERROR: Using / as the base directory is not allowed."
+    exit 1
+fi
+
+# Temporary directory
+TEMP_DIR=$(mktemp -d)
+
+cleanup() {
+    rm -rf "$TEMP_DIR"
+    echo "Temporary files cleaned up."
+}
+
+trap cleanup EXIT
 # Directories to create
 CONFIG_DIR="$BASE_DIR/config"
 DATA_DIR="$BASE_DIR/data"
@@ -65,4 +92,3 @@ echo "Directory and file creation completed."
 echo "Base directory: $BASE_DIR"
 echo "Log file: $LOG_FILE"
 echo "=========================================="
-```
